@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AID-lathund v170</title>
+<meta name="description" content="Systemspecifik AID-lathund för klinisk pilot.">
+<style>
+:root{
+  --bg:#f5f7f9;--card:#fff;--text:#17202a;--muted:#667085;--line:#d9e0e7;
+  --blue:#2f67a6;--blue2:#edf4fb;--purple:#72529a;--purple2:#f3eef9;
+  --green:#2f6b43;--amber:#8b5b00;--red:#a61b12;--red2:#fff0ee;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;line-height:1.38}
+.wrap{max-width:1080px;margin:0 auto;padding:22px 24px 24px}
+h1{font-size:26px;margin:0} h2{font-size:18px;margin:0}
+#contextTitle{margin-top:9px}
+.sub{font-size:12px;color:var(--muted);margin-top:4px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 1px 3px rgba(16,24,40,.05)}
+.hidden{display:none!important}
+.contextstart{max-width:820px;margin:34px auto;padding:0 18px}
+.contextlead{font-size:12px;color:var(--muted);margin:7px 0 16px}
+.contextchoices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice{border:1px solid #d0d7df;background:#fff;border-radius:12px;padding:16px;text-align:left;cursor:pointer}
+.choice b{display:block;font-size:15px}.choice span{font-size:11px;color:var(--muted)}
+.choice:hover{background:#f8fafc}
+.topselectors{display:grid;grid-template-columns:1fr .75fr;gap:10px;margin:12px 0 10px}
+.tool-links{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;margin:1px 0 10px}
+.tool-links .detailsbox{margin:0}
+.semantic-card{
+  margin-top:9px;
+  border:1px solid #e6ebf1;
+  border-left-width:4px;
+  border-radius:13px;
+  padding:11px 13px;
+  box-shadow:0 1px 2px rgba(16,24,40,.03);
+}
+.system-card{
+  background:#fbfdff;
+  border-left-color:#9fc1e3;
+}
+.behavior-card{
+  background:#fffdf8;
+  border-left-color:#e5c98c;
+}
+.system-card .contextrow{margin:0 0 6px}
+.system-card h2{
+  margin:0;
+  font-size:15px;
+}
+.behavior-card summary{
+  cursor:pointer;
+  color:#344054;
+  list-style:none;
+}
+.behavior-card summary::-webkit-details-marker{display:none}
+.behavior-card[open] summary{margin-bottom:5px}
+.behavior-card div{font-size:11.5px;line-height:1.45;color:#475467;font-weight:600}
+.section-title{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+.section-icon{
+  display:inline-flex;
+  width:15px;
+  height:15px;
+  flex:0 0 15px;
+}
+.system-icon{color:#3f6f9f}
+.behavior-icon{color:#9a7a2e}
+.section-icon svg{
+  width:100%;
+  height:100%;
+}
+
+.control{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+label{display:block;font-size:10px;font-weight:800;color:#475467;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+select{width:100%;border:0;background:transparent;font:inherit;font-weight:750;color:var(--text);outline:none}
+.preg-phase-note{
+  margin:-2px 0 7px;
+  font-size:10.5px;
+  line-height:1.4;
+  color:#475467;
+}
+.pregopt{font-size:10px;color:#667085;margin:2px 0 8px;padding:0}
+.pregopt summary{cursor:pointer;font-weight:700;color:#475467;list-style:none}
+.preg-status{font-weight:400;color:#667085}
+.pregopt summary::-webkit-details-marker{display:none}
+.pregopt summary::after{content:''}
+.pregopt div{margin-top:4px;color:#667085}
+.patternbox{margin-bottom:9px;padding:13px}
+.categories,.patterns{display:flex;gap:7px;flex-wrap:wrap}
+.categories{margin-bottom:8px}
+.meal-curve-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+}
+.curve-card{
+  appearance:none;
+  width:100%;
+  min-width:0;
+  border:1px solid #dfe5ec;
+  border-radius:11px;
+  background:#fff;
+  padding:8px 8px 9px;
+  cursor:pointer;
+  color:#344054;
+  text-align:left;
+  transition:background .12s,border-color .12s,box-shadow .12s;
+}
+.curve-card:hover{border-color:#b8c8d8}
+.curve-card.active{
+  background:var(--blue2);
+  border-color:#8fb6dc;
+  box-shadow:0 0 0 1px rgba(47,103,166,.06);
+}
+.curve-card svg{
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio:2.35/1;
+  overflow:visible;
+}
+.curve-marker{
+  stroke:#b6c0cb;
+  stroke-width:1.2;
+}
+.curve-line{
+  fill:none;
+  stroke:#315f8d;
+  stroke-width:2.4;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;
+}
+.curve-label{
+  margin-top:3px;
+  font-size:10.5px;
+  line-height:1.2;
+  font-weight:800;
+  text-align:center;
+  white-space:normal;
+}
+.curve-axis-label{
+  fill:#667085;
+  font-size:8.5px;
+  font-weight:600;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+}
+.catbtn,.patbtn{min-height:34px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 11px;cursor:pointer;font:inherit;font-weight:750;transition:background .12s,border-color .12s,box-shadow .12s}
+.catbtn{font-size:11px}.patbtn{font-size:12px}
+.catbtn.active{background:#223b57;color:#fff;border-color:#223b57}
+.patbtn.active{background:var(--blue2);border-color:#9fc1e3;color:#194f88}
+.catbtn:hover,.patbtn:hover{border-color:#b8c5d2}
+.precheck{margin:6px 0 8px;font-size:10.5px;color:#667085}
+.hypo-treatment{
+  margin:8px 0 0;
+  padding:8px 10px;
+  border:1px solid #ead9aa;
+  border-radius:10px;
+  background:#fffdf5;
+  font-size:11px;
+  color:#475467;
+}
+.hypo-treatment summary{
+  cursor:pointer;
+  list-style:none;
+  color:#344054;
+}
+.hypo-treatment summary::-webkit-details-marker{display:none}
+.hypo-treatment div{
+  margin-top:5px;
+  font-size:10.5px;
+  line-height:1.4;
+  color:#667085;
+}
+.info-toggle{border:0;background:transparent;padding:0;color:#52697f;font:inherit;font-size:10.5px;font-weight:800;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.detailsbox{margin:2px 0 7px;border:0;background:transparent;padding:0;font-size:10.5px;color:#667085}
+.detailsbox summary{cursor:pointer;font-weight:700;color:#667085}
+.reconnect{margin-top:7px;padding-top:7px;border-top:1px solid #e7ebef}
+.reconnect summary{font-size:10px;color:#667085;font-weight:800}
+.reconnect .rline{margin-top:5px}
+.contextrow{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:12px 0 8px}
+.actions{background:transparent;border:0;border-radius:0;overflow:hidden}
+.row{display:grid;grid-template-columns:32px minmax(0,1fr);gap:9px;align-items:start;padding:10px 0;border-bottom:1px solid #e9edf2}
+.row:first-child{padding-top:3px}
+.row:last-child{border-bottom:0;padding-bottom:2px}
+.num{width:25px;height:25px;border-radius:50%;background:#72529a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:850}
+.act{font-size:13.5px;font-weight:820}
+.actmeta{margin-top:3px;font-size:10.5px;line-height:1.35;color:#667085;font-weight:500}
+.evinfo{display:inline-flex;align-items:center;justify-content:center;margin-left:5px;width:15px;height:15px;border:1px solid #cfd6de;border-radius:50%;font-size:9px;font-weight:800;color:#667085;cursor:pointer;vertical-align:1px;background:#fff}
+.action-note{display:none;margin-top:6px;font-size:10.5px;line-height:1.35;color:#475467;font-weight:500}
+.action-note.open{display:block}
+.back{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 9px;font:inherit;font-size:10.5px;font-weight:750;cursor:pointer}
+.footer{font-size:10px;color:#667085;margin-top:14px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.footer-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.meta-link{border:0;background:transparent;padding:0;color:#667085;font:inherit;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px}
+.meta-link:hover{color:#344054}
+.meta-pop{margin-top:7px;max-width:760px;border:1px solid #dfe4ea;border-radius:8px;background:#fbfcfd;padding:8px 10px;font-size:10px;line-height:1.45;color:#475467}
+.meta-pop b{color:#344054}
+.safety-high{margin:7px 0 0;font-size:10.5px;color:#8a2c24}
+.safety-high summary{cursor:pointer;font-weight:800;list-style:none}
+.safety-high summary::-webkit-details-marker{display:none}
+.safety-high div{margin-top:5px;color:#7a271a;line-height:1.45}
+.safety-high .tri{font-size:10px;margin-right:4px}
+button:focus-visible,summary:focus-visible,select:focus-visible{
+  outline:2px solid #7da9d6;
+  outline-offset:2px;
+}
+@media(max-width:780px){
+  .wrap{padding:18px 14px 22px}
+  h1{font-size:23px}
+  .contextchoices,.topselectors{grid-template-columns:1fr}
+  .topselectors{gap:8px}
+  .row{grid-template-columns:30px 1fr}
+  .contextrow{align-items:flex-start;flex-direction:column}
+  .meal-curve-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .curve-card{padding:7px}
+  .catbtn,.patbtn{min-height:36px}
+  .footer{flex-direction:column}
+}
+</style>
+</head>
+<body>
+<div id="startView" class="contextstart">
+  <h1>AID-lathund</h1>
+  <div class="contextchoices">
+    <button class="choice" id="chooseStandard"><b>Diabetesmottagning</b></button>
+    <button class="choice" id="choosePregnancy"><b>sMVC</b></button>
+  </div>
+</div>
+
+<div id="toolView" class="hidden">
+<div class="wrap">
+  <button class="back" id="backBtn">← Vårdkontext</button>
+  <h1 id="contextTitle">Diabetesmottagning</h1>
+  <div class="topselectors">
+    <div class="control">
+      <select id="pump">
+        <option value="omnipod">Omnipod 5</option>
+        <option id="tandemOption" value="tandem">Tandem t:slim X2 · Control-IQ/Control-IQ+</option>
+        <option value="medtronic">MiniMed 780G</option>
+        <option value="camaps">CamAPS FX / YpsoPump</option>
+      </select>
+    </div>
+    <div class="control hidden" id="phaseControl">
+      <select id="phase" aria-label="Graviditetsfas">
+        <option value="early">Tidigt · v.0–15</option>
+        <option value="late">Från v.16</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="pregPhaseNote" class="preg-phase-note hidden"></div>
+
+  <details id="pregOpt" class="pregopt hidden"><summary><span id="pregOptSummary"></span><span id="pregOptStatus" class="preg-status"></span> ⓘ</summary><div id="pregOptText"></div></details>
+
+  <div class="tool-links">
+    <div id="analysisTool"></div>
+    <div id="interpretTool"></div>
+  </div>
+
+  <div class="card patternbox">
+    <label>CGM-mönster</label>
+    <div class="categories" id="categories"></div>
+    <div class="patterns" id="patterns"></div>
+    <div id="mealPatternsGrouped" class="meal-curve-grid hidden"></div>
+  </div>
+    <details class="safety-high">
+      <summary><span class="tri">▲</span>Oväntat högt</summary>
+      <div>Verifiera glukos, kontrollera ketoner + set/pod. Vid tillförselavbrott: korrigera med penna och byt set/pod; injicerat insulin ingår inte i pumpens IOB. Ketoner +: följ lokal keton/DKA-rutin.</div>
+    </details>
+
+  <div id="precheck"></div>
+
+  <details id="hypoTreatment" class="hypo-treatment hidden">
+    <summary><b>Hypo:</b> 5–10 g glukos · kontroll efter 15 min ⓘ</summary>
+    <div>Upprepa vid kvarstående lågt. Vid aktivitet eller tydlig överbolus kan mer behövas.</div>
+  </details>
+
+  <details id="behavior" class="semantic-card behavior-card behavior-info hidden">
+    <summary><span class="section-title"><span class="section-icon behavior-icon" aria-hidden="true">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="9" cy="7" r="3"></circle>
+  <path d="M4.5 17c.7-2.7 2.8-4 4.5-4s3.8 1.3 4.5 4"></path>
+  <path d="M16 14.5l2 2 4-4"></path>
+</svg>
+</span><b>Åtgärdbart beteende</b></span> ⓘ</summary>
+    <div id="behaviorText"></div>
+  </details>
+
+  <section id="systemSection" class="semantic-card system-card hidden">
+    <div class="contextrow" id="actionsHeader">
+      <h2><span class="section-title"><span class="section-icon system-icon" aria-hidden="true">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <line x1="4" y1="6" x2="20" y2="6"></line>
+  <circle cx="9" cy="6" r="2"></circle>
+  <line x1="4" y1="12" x2="20" y2="12"></line>
+  <circle cx="15" cy="12" r="2"></circle>
+  <line x1="4" y1="18" x2="20" y2="18"></line>
+  <circle cx="7" cy="18" r="2"></circle>
+</svg>
+</span>Pumpinställningar</span></h2>
+    </div>
+    <div class="actions" id="actions"></div>
+  </section>
+
+  <div class="footer">
+    <div>
+      <div class="footer-meta">
+        <span>v170</span>
+        <span>·</span>
+        <button class="meta-link" type="button" data-meta="evidence">Evidens / scope ⓘ</button>
+        <span>·</span>
+        <button class="meta-link" type="button" data-meta="sources">Källor ⓘ</button>
+      </div>
+      <div id="metaEvidence" class="meta-pop hidden">
+        <b>Scope:</b> Release candidate för klinisk pilot. Kliniskt beslutsstöd, inte automatisk dosordination. Formell extern användarvalidering återstår.
+        Aktuell IFU och lokal rutin har företräde.
+      </div>
+      <div id="metaSources" class="meta-pop hidden">
+        <b>Källor:</b> ADA Standards of Care 2026; aktuell IFU/HCP-information för Omnipod 5, Control-IQ+, MiniMed 780G och CamAPS FX; CIRCUIT 2025 och AiDAPT 2023. Menyvägar och indikationer verifierade 2026-08-28.
+        ≈10–20 % är pragmatiskt titreringssteg, inte formell tröskel.
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const pumps={
+  omnipod:{
+    name:'Omnipod 5',
+    target:'Omnipod 5-app → Inställningar → Bolus → Målvärde för glukos',
+    icr:'Omnipod 5-app → Inställningar → Bolus → Insulin-till-kolhydratkvot',
+    cf:'Omnipod 5-app → Inställningar → Bolus → Korrigeringsfaktor',
+    dia:'Omnipod 5-app → Inställningar → Bolus → Insulinduration',
+    activity:'Omnipod 5-app → Meny → Aktivitet'
+  },
+  tandem:{
+    name:'Tandem t:slim X2 · Control-IQ/Control-IQ+',
+    sleep:'Inställningar → Aktivitetsprofil → Sömn',
+    exercise:'Inställningar → Aktivitetsprofil → Träning',
+    basal:'Inställningar → Min pump → Personliga profiler → [profil] → Basal',
+    icr:'Inställningar → Min pump → Personliga profiler → [profil] → KH-kvot',
+    cf:'Inställningar → Min pump → Personliga profiler → [profil] → ISF'
+  },
+  medtronic:{
+    name:'MiniMed 780G',
+    target:'SmartGuard → SmartGuard-inställningar → SmartGuard-mål',
+    ait:'Doseringsinställningar → Bolus Wizard-inställning → Aktiv insulintid',
+    icr:'Doseringsinställningar → Bolus Wizard-inställning → Kolhydratkvot',
+    activity:'SmartGuard → Temp mål'
+  },
+  camaps:{
+    name:'CamAPS FX / YpsoPump',
+    target:'Meny → Inställningar → Personligt målglukosvärde',
+    icr:'Meny → Inställningar → Boluskalkylator → Kvot insulin:kolhydrater',
+    boost:'CamAPS FX → Boost',
+    ease:'CamAPS FX → Ease-off',
+    slow:'CamAPS FX → Lägg till måltid → Långsamt absorberad måltid'
+  }
+};
+
+const patternGroups={
+  night:{label:'Fasta',items:{fastLow:'Lågt',fastHigh:'Högt'}},
+  meal:{label:'Måltid',items:{mealHighTransient:'Tidig topp, övergående',mealHighPersistent:'Tidig topp, kvarstående',lateHigh:'Sen topp >2 h',mealLow:'Lågt efter mat'}},
+  activity:{label:'Aktivitet',items:{exerciseLow:'Lågt vid/efter aktivitet'}}
+};
+
+
+
+let care='standard', currentGroup='night', currentPattern='fastHigh';
+const $=id=>document.getElementById(id);
+const pump=$('pump'), phase=$('phase');
+
+function enter(mode){
+  care=mode;
+  $('startView').classList.add('hidden');
+  $('toolView').classList.remove('hidden');
+  $('phaseControl').classList.toggle('hidden', care!=='pregnancy');
+  renderAll();
+}
+$('chooseStandard').onclick=()=>enter('standard');
+$('choosePregnancy').onclick=()=>enter('pregnancy');
+$('backBtn').onclick=()=>{ $('toolView').classList.add('hidden'); $('startView').classList.remove('hidden'); };
+
+function mealCurveSVG(kind){
+  const paths={
+    transient:'M8 43 C22 43,28 43,35 42 C45 40,51 24,63 17 C75 10,85 20,92 30 C101 40,111 43,122 43 C139 43,151 42,170 42',
+    persistent:'M8 43 C22 43,29 43,35 42 C46 40,52 25,63 17 C73 11,84 16,92 20 C105 23,119 21,132 20 C145 19,158 20,170 20',
+    late:'M8 43 C23 43,29 43,35 42 C53 41,69 40,84 39 C99 38,108 34,117 27 C127 19,137 15,147 16 C156 17,163 19,170 20',
+    low:'M8 42 C22 42,29 42,35 41 C47 38,56 30,67 29 C80 28,88 35,95 42 C104 51,113 57,123 58 C139 59,154 56,170 54'
+  };
+  return `
+    <svg viewBox="0 0 180 76" aria-hidden="true">
+      <line class="curve-marker" x1="35" y1="6" x2="35" y2="61"></line>
+      <line class="curve-marker" x1="120" y1="6" x2="120" y2="61"></line>
+      <path class="curve-line" d="${paths[kind]}"></path>
+      <text class="curve-axis-label" x="35" y="67" text-anchor="middle">måltid</text>
+      <text class="curve-axis-label" x="120" y="67" text-anchor="middle">2 h</text>
+    </svg>`;
+}
+
+function renderPatternControls(){
+  $('categories').innerHTML='';
+  Object.entries(patternGroups).forEach(([k,g])=>{
+    const b=document.createElement('button');
+    b.className='catbtn'+(k===currentGroup?' active':'');
+    b.textContent=g.label;
+    b.onclick=()=>{ currentGroup=k; currentPattern=Object.keys(patternGroups[k].items)[0]; renderAll(); };
+    $('categories').appendChild(b);
+  });
+
+  const generic=$('patterns');
+  const grouped=$('mealPatternsGrouped');
+
+  generic.innerHTML='';
+  grouped.innerHTML='';
+
+  if(currentGroup==='meal'){
+    generic.classList.add('hidden');
+    grouped.classList.remove('hidden');
+
+    const cards=[
+      ['mealHighTransient','transient','Övergående topp'],
+      ['mealHighPersistent','persistent','Kvarstående topp'],
+      ['lateHigh','late','Sen topp'],
+      ['mealLow','low','Lågt efter mat']
+    ];
+
+    cards.forEach(([k,curve,label])=>{
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='curve-card'+(k===currentPattern?' active':'');
+      b.setAttribute('aria-pressed',k===currentPattern?'true':'false');
+      b.setAttribute('aria-label',label);
+      b.innerHTML=mealCurveSVG(curve)+`<div class="curve-label">${label}</div>`;
+      b.onclick=()=>{ currentPattern=k; renderAll(); };
+      grouped.appendChild(b);
+    });
+    return;
+  }
+
+  grouped.classList.add('hidden');
+  generic.classList.remove('hidden');
+
+  const g=patternGroups[currentGroup];
+  Object.entries(g.items).forEach(([k,label])=>{
+    const b=document.createElement('button');
+    b.className='patbtn'+(k===currentPattern?' active':'');
+    b.textContent=label;
+    b.onclick=()=>{ currentPattern=k; renderAll(); };
+    generic.appendChild(b);
+  });
+}
+function renderPregPhaseNote(){
+  const el=$('pregPhaseNote');
+  if(care!=='pregnancy'){
+    el.classList.add('hidden');
+    el.textContent='';
+    return;
+  }
+
+  el.textContent = phase.value==='early'
+    ? 'Ökad känslighet/hyporisk → dosreducera vb. Illamående/osäkert intag → dela eller senarelägg bolus.'
+    : 'Insulinbehovet stiger ofta → titrera tätare vid kvarstående hyperglykemi.';
+  el.classList.remove('hidden');
+}
+
+function pregOptimization(){
+  const el=$('pregOpt');
+  const tandemOption=$('tandemOption');
+
+  tandemOption.textContent = care==='pregnancy'
+    ? 'Tandem t:slim X2 · Control-IQ+'
+    : 'Tandem t:slim X2 · Control-IQ/Control-IQ+';
+
+  if(care!=='pregnancy'){
+    el.classList.add('hidden');
+    el.removeAttribute('open');
+    return;
+  }
+
+  const ph=phase.value;
+  const summary = {
+    tandem:'Sömnläge dygnet runt',
+    medtronic:'SmartGuard-mål 5,5 mmol/L · AIT 2 h',
+    omnipod:'Målglukos 6,1 mmol/L',
+    camaps: ph==='early'
+      ? 'Målglukos 5,5 mmol/L'
+      : 'Mål 5,5 mmol/L · överväg 5,0 dag / 4,5 natt'
+  };
+
+  const details = {
+    tandem:'Graviditetsindikation gäller Control-IQ+ med kompatibel CGM för graviditet; verifiera programversion. Sökväg: Inställningar → Aktivitetsprofil → Sömn. Använd Sömnläge 24/7. Om boluskalkylatorn föreslår bolusreduktion vid glukos <6,1 mmol/L: välj Nej.' +
+      (ph==='late' ? ' Efter v.20: vid kvarstående hyperglykemi kan basalprofilen behöva ligga cirka 20 % över genomsnittligt levererad basal senaste 1–2 veckorna.' : ''),
+    medtronic:'SmartGuard-mål: SmartGuard → SmartGuard-inställningar → SmartGuard-mål. AIT: Doseringsinställningar → Bolus Wizard-inställning → Aktiv insulintid.',
+    omnipod:'Sökväg: Omnipod 5-app → Inställningar → Bolus → Målvärde för glukos. SmartAdjust ska enligt aktuell IFU inte användas under graviditet.',
+    camaps:'Sökväg: Meny → Inställningar → Personligt målglukosvärde. Tidigt: omkring 5,5 mmol/L. Från v.16: överväg 5,0 mmol/L dagtid och 4,5 mmol/L nattetid. Uppdatera kroppsvikt cirka var 4:e vecka.'
+  };
+
+  $('pregOptSummary').textContent=summary[pump.value];
+  $('pregOptStatus').textContent = pump.value==='omnipod' ? ' · Omnipod 5 ej godkänd för gravida' : '';
+  $('pregOptText').textContent=details[pump.value];
+  el.classList.remove('hidden');
+}
+function analysisHelp(p){
+  const report={
+    omnipod:'Glooko → Sammanfattning → Systeminformation · Diagram → Översikt → 1 dag.',
+    tandem:'Tandem Source → Overview · Daily Timeline · Pump Settings → 2 veckor.',
+    medtronic:'CareLink → Assessment & Progress → Daily/Weekly Review.',
+    camaps:'Glooko → Sammanfattning → Systeminformation · Diagram → dagsvy.'
+  };
+  const reconnect={
+    omnipod:
+      '<div class="rline"><b>Patient · webbläsare:</b> Omnipod-konto → Mitt konto → Kontolänkning → Glooko → Länka.</div>' +
+      '<div class="rline"><b>Patient · Glooko:</b> Lägg till vårdteam/ProConnect → ange klinikens kod.</div>',
+    tandem:
+      '<div class="rline"><b>Patient · Tandem Source:</b> Account Settings → Share Reports → Add Clinic → välj klinik → Start Sharing.</div>' +
+      '<div class="rline"><b>Om data saknas:</b> kontrollera att t:slim-appen är parkopplad, inloggad och har internet. Alternativ: Tandem Source → Upload Pump → Start Upload via USB.</div>',
+    medtronic:
+      '<div class="rline"><b>Patient · MiniMed Mobile:</b> Meny → Sync to CareLink → aktivera / Upload Now.</div>' +
+      '<div class="rline"><b>Vårdgivare · CareLink Clinic:</b> skicka länkningsbegäran.</div>' +
+      '<div class="rline"><b>Patient · CareLink Personal:</b> Datadelning → godkänn.</div>',
+    camaps:
+      '<div class="rline"><b>Patient · CamAPS FX:</b> Meny → Dela → Glooko → Användare 1 → Länka.</div>' +
+      '<div class="rline"><b>Patient · Glooko:</b> Lägg till vårdteam/ProConnect → ange klinikens kod. Länka om efter lösenordsbyte.</div>'
+  };
+  return `<details class="detailsbox"><summary>Analysverktyg ⓘ</summary>
+    <div class="rline"><b>Hitta data:</b> ${report[p]}</div>
+    <details class="reconnect"><summary>Återanslut data</summary>${reconnect[p]}</details>
+  </details>`;
+}
+function systemTipsHelp(p){
+  const specific={
+    medtronic:
+      '<div class="rline"><b>Missad måltidsbolus:</b> ≤30 min → ange 50 % av KH; >30 min → korrigeringsbolus endast om pumpen rekommenderar.</div>' +
+      '<div class="rline"><b>Temp mål:</b> autokorrigering är avstängd.</div>' +
+      '<div class="rline"><b>ISF:</b> styr inte SmartGuards autokorrigering.</div>' +
+      '<div class="rline"><b>Falska/fantom-KH:</b> använd inte.</div>',
+    tandem:
+      '<div class="rline"><b>Sömnläge:</b> inga autokorrigeringsbolusar.</div>' +
+      '<div class="rline"><b>ISF:</b> påverkar basalmodulering och autokorrigering.</div>',
+    omnipod:
+      '<div class="rline"><b>Basalprogram:</b> påverkar inte SmartAdjust.</div>' +
+      '<div class="rline"><b>Målglukos:</b> enda direkta reglaget för automatiserad insulintillförsel.</div>' +
+      '<div class="rline"><b>Aktivitetsfunktion:</b> boluskalkylatorn använder ordinarie mål, inte 8,3 mmol/L.</div>',
+    camaps:
+      '<div class="rline"><b>Boost:</b> algoritmen räknar med ≈35 % högre insulinbehov; målglukos är oförändrat.</div>'
+  };
+
+  return `<details class="detailsbox"><summary>Systemtips ⓘ</summary>${specific[p]}</details>`;
+}
+
+function renderPrecheck(){
+  const pat=currentPattern;
+  $('precheck').innerHTML = pat==='fastLow'
+    ? '<div class="precheck">Isolerat nattligt CGM-lågt: uteslut kompressionsartefakt.</div>'
+    : '';
+}
+
+function renderHypoTreatment(){
+  const el=$('hypoTreatment');
+  const isLow=['fastLow','mealLow','exerciseLow'].includes(currentPattern);
+  if(isLow){
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+    el.removeAttribute('open');
+  }
+}
+
+function ev(code){ return code==='SYS'?'SYS':code==='RCT'?'RCT':'KONS'; }
+function add(A,title,menu,evidence='KONS'){A.push({title,menu,evidence});}
+
+function getActions(){
+  const p=pump.value, pat=currentPattern, P=pumps[p], A=[], preg=care==='pregnancy';
+  const khStep = '≈10–20 %';
+
+  if(p==='camaps'){
+    if(pat==='fastHigh' && !preg) add(A,'Sänk personligt målglukos',P.target,'SYS');
+    if(pat==='fastLow') add(A,'Höj personligt målglukos i aktuellt segment',P.target,'SYS');
+    if(pat==='exerciseLow') add(A,'Ease-off 1–2 h före aktivitet med hyporisk',P.ease,'SYS');
+    if(pat==='mealHighPersistent') add(A,'Stärk KH-kvot '+khStep,P.icr,'KONS');
+    if(pat==='lateHigh'){
+      add(A,'Stärk KH-kvot '+khStep,P.icr,'KONS');
+      add(A,'Långsamt absorberad måltid vb',P.slow,'SYS');
+    }
+    if(pat==='mealLow') add(A,'Försvaga KH-kvot ≈10–20 %',P.icr,'KONS');
+  }
+
+  if(p==='medtronic'){
+    if(pat==='fastHigh' && !preg){
+      add(A,'Sätt SmartGuard-mål 5,5 mmol/L',P.target,'SYS');
+      add(A,'Sätt AIT 2 h',P.ait,'SYS');
+    }
+    if(pat==='mealHighPersistent') add(A,'Stärk KH-kvot '+khStep,P.icr,'KONS');
+    if(pat==='lateHigh') add(A,'Stärk KH-kvot '+khStep,P.icr,'KONS');
+    if(pat==='fastLow') add(A,'Höj SmartGuard-målet',P.target,'SYS');
+    if(pat==='exerciseLow') add(A,'Temp mål 1–2 h före aktivitet med hyporisk',P.activity,'SYS');
+    if(pat==='mealLow') add(A,'Försvaga KH-kvot ≈10–20 %',P.icr,'KONS');
+  }
+
+  if(p==='tandem'){
+    if(pat==='fastHigh'){
+      add(A,'Öka relevant basal ≈10–20 %',P.basal,'KONS');
+      if(preg) add(A,'Stärk ISF ≈10–20 %',P.cf,'KONS');
+      else add(A,'Om korrektionsdriven: stärk ISF ≈10–20 %',P.cf,'KONS');
+    }
+    if(pat==='mealHighPersistent') add(A,'Stärk KH-kvot '+khStep,P.icr,'KONS');
+    if(pat==='lateHigh'){
+      add(A,'Stärk KH-kvot '+khStep,P.icr,'KONS');
+      add(A,'Förlängd bolus vb','Bolus → EXTENDED','SYS');
+    }
+    if(pat==='fastLow'){
+      add(A,'Minska relevant basal ≈10–20 %',P.basal,'KONS');
+      add(A,'Om korrektionsdriven: försvaga ISF ≈10–20 %',P.cf,'KONS');
+    }
+    if(pat==='exerciseLow') add(A,'Aktivera Träningsläge 1–2 h före aktivitet med hyporisk',P.exercise,'SYS');
+    if(pat==='mealLow') add(A,'Försvaga KH-kvot ≈10–20 %',P.icr,'KONS');
+  }
+
+  if(p==='omnipod'){
+    if(pat==='fastHigh' && !preg) add(A,'Sänk målglukos om >6,1 mmol/L',P.target,'SYS');
+    if(pat==='fastHigh' && preg){
+      add(A,'Säkerställ målglukos 6,1 mmol/L',P.target,'SYS');
+      add(A,'Överväg manuellt läge nattetid med anpassad basal','Omnipod 5-app → Meny → Växla läge','KONS');
+    }
+    if(pat==='mealHighPersistent'){
+      add(A,'Stärk KH-kvot '+khStep,P.icr,'KONS');
+      add(A,'Vid bolusreduktion under mål: Omvänd korrektion AV','Omnipod 5-app → Inställningar → Bolus → Omvänd korrektion','SYS');
+      if(preg) add(A,'Vid behov: falska KH','Patientåtgärd','KONS');
+    }
+    if(pat==='lateHigh'){
+      add(A,'Stärk KH-kvot '+khStep,P.icr,'KONS');
+      if(preg) add(A,'Vid behov: falska KH','Patientåtgärd','KONS');
+    }
+    if(pat==='fastLow') add(A,'Höj målglukos i relevant segment',P.target,'SYS');
+    if(pat==='exerciseLow') add(A,'Aktivitetsfunktion 1–2 h före aktivitet med hyporisk',P.activity,'SYS');
+    if(pat==='mealLow'){
+      add(A,'Försvaga KH-kvot ≈10–20 %',P.icr,'KONS');
+      add(A,'Vid måltidsstart under mål: Omvänd korrektion PÅ','Omnipod 5-app → Inställningar → Bolus → Omvänd korrektion','SYS');
+    }
+  }
+  return A;
+}
+function renderActions(){
+  const section=$('systemSection');
+  const header=$('actionsHeader');
+  const box=$('actions');
+
+  const A=getActions();
+  const evText = {
+    SYS:'Systemspecifik manual/IFU',
+    RCT:'Randomiserad studie / graviditetsspecifik evidens',
+    KONS:'Konsensus / expertstöd'
+  };
+
+  function adjustmentExample(title){
+    if(title.includes('Stärk KH-kvot') || title.includes('Stärk Insulin-till-kolhydratkvot')){
+      return 'Exempel: 10 g/E → 8–9 g/E.';
+    }
+    if(title.includes('Försvaga KH-kvot')){
+      return 'Exempel: 10 g/E → 11–12 g/E.';
+    }
+    if(title.includes('stärk ISF')){
+      return 'Exempel: 3,0 mmol/L/E → 2,4–2,7 mmol/L/E.';
+    }
+    if(title.includes('försvaga ISF')){
+      return 'Exempel: 3,0 mmol/L/E → 3,3–3,6 mmol/L/E.';
+    }
+    return '';
+  }
+
+  if(!A.length){
+    section.classList.add('hidden');
+    box.innerHTML='';
+    return;
+  }
+
+  section.classList.remove('hidden');
+  header.classList.remove('hidden');
+  box.classList.remove('hidden');
+  box.innerHTML=A.map((a,i)=>{
+    const meta = a.menu === 'Patientåtgärd' ? 'Patientåtgärd' : 'Sökväg: ' + a.menu;
+    const support = evText[ev(a.evidence)] || '';
+    const example = adjustmentExample(a.title);
+    const note = [example, support ? 'Stöd: '+support+'.' : ''].filter(Boolean).join(' ');
+    return `
+    <div class="row">
+      <div class="num">${i+1}</div>
+      <div>
+        <div class="act">${a.title}<button type="button" class="evinfo" aria-label="Visa förklaring" aria-expanded="false">i</button></div>
+        <div class="actmeta">${meta}</div>
+        <div class="action-note">${note}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  box.querySelectorAll('.evinfo').forEach(btn=>{
+    btn.onclick=()=>{
+      const note=btn.closest('.row').querySelector('.action-note');
+      const open=note.classList.toggle('open');
+      btn.setAttribute('aria-expanded',open?'true':'false');
+    };
+  });
+}
+function renderBehavior(){
+  const el=$('behavior');
+  const labels=$('behaviorLabels');
+  const body=$('behaviorText');
+
+  let html='';
+
+  if(currentPattern==='mealHighTransient'){
+    html='Tidigarelägg bolus 5–10 min åt gången.';
+  }
+
+  if(currentPattern==='mealHighPersistent'){
+    html='Missad/sen bolus? · Rimlig KH-inmatning?';
+  }
+
+  if(currentPattern==='lateHigh'){
+    html='Rimlig KH-inmatning? · Fett/protein?';
+  }
+
+  if(currentPattern==='mealLow'){
+    html='Tidig hypo: senarelägg bolus 5–10 min åt gången.';
+  }
+
+  if(html){
+    if(labels) labels.textContent='';
+    body.textContent=html;
+    el.classList.remove('hidden');
+    if(!el.hasAttribute('open')) el.setAttribute('open','');
+  } else {
+    if(labels) labels.textContent='';
+    body.textContent='';
+    el.classList.add('hidden');
+    el.removeAttribute('open');
+  }
+
+}
+function renderAll(){
+  $('contextTitle').textContent = care === 'pregnancy' ? 'sMVC' : 'Diabetesmottagning';
+  $('analysisTool').innerHTML = analysisHelp(pump.value);
+  $('interpretTool').innerHTML = systemTipsHelp(pump.value);
+  renderPatternControls();
+  renderPregPhaseNote();
+  pregOptimization();
+  renderPrecheck();
+  renderHypoTreatment();
+  renderActions();
+  renderBehavior();
+}
+
+pump.onchange=renderAll;
+phase.onchange=renderAll;
+
+document.querySelectorAll('.meta-link').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const target = btn.dataset.meta === 'evidence' ? $('metaEvidence') : $('metaSources');
+    const other = btn.dataset.meta === 'evidence' ? $('metaSources') : $('metaEvidence');
+    other.classList.add('hidden');
+    target.classList.toggle('hidden');
+  });
+});
+
+renderPatternControls();
+</script>
+</body>
+</html>
