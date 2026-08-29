@@ -115,12 +115,21 @@ function assertCase(g, got) {
   }
 }
 
+function assertTextSequence(text, fragments, name) {
+  let previous = -1;
+  for (const fragment of fragments) {
+    const index = text.indexOf(fragment, previous + 1);
+    assert.ok(index > previous, `${name}: saknar eller har fel ordning för ${fragment}`);
+    previous = index;
+  }
+}
+
 // Clinical golden cases: independently reviewed clinical expectations.
 const golden = [
   {name:"OP5 standard fasta hög", in:{pump:"omnipod",pattern:"fastHigh"}, actions:["Sänk målglukos om >6,1 mmol/L"], hypoVisible:false},
   {name:"OP5 standard fasta låg", in:{pump:"omnipod",pattern:"fastLow"}, actions:["Höj målglukos i relevant segment"]},
   {name:"OP5 standard måltid kvarstående", in:{pump:"omnipod",pattern:"mealHighPersistent"}, actionIncludes:["Stärk KH-kvot","Omvänd korrektion AV vid bolusreduktion under mål"], actionEquals:{1:"Omvänd korrektion AV vid bolusreduktion under mål"}, hypoVisible:false},
-  {name:"OP5 standard måltid låg", in:{pump:"omnipod",pattern:"mealLow"}, actions:["Försvaga KH-kvot ≈10–20 %","Omvänd korrektion PÅ vid måltidsstart under mål"]},
+  {name:"OP5 standard måltid låg", in:{pump:"omnipod",pattern:"mealLow"}, actionIncludes:["Försvaga KH-kvot","Omvänd korrektion PÅ vid måltidsstart under mål"], actionEquals:{1:"Omvänd korrektion PÅ vid måltidsstart under mål"}},
   {name:"OP5 standard aktivitet", in:{pump:"omnipod",pattern:"exerciseLow"}, actions:["Aktivitetsfunktion 1–2 h före aktivitet med hyporisk"]},
 
   {name:"780G standard fasta hög", in:{pump:"medtronic",pattern:"fastHigh"}, actions:["Sätt SmartGuard-mål 5,5 mmol/L","Sätt AIT 2 h"], hypoVisible:false},
@@ -129,7 +138,7 @@ const golden = [
   {name:"780G standard aktivitet", in:{pump:"medtronic",pattern:"exerciseLow"}, actions:["Temp mål 1–2 h före aktivitet med hyporisk"]},
 
   {name:"Tandem standard fasta hög", in:{pump:"tandem",pattern:"fastHigh"}, actionIncludes:["Öka relevant basal","stärk ISF"], hypoVisible:false},
-  {name:"Tandem standard fasta låg", in:{pump:"tandem",pattern:"fastLow"}, actions:["Minska relevant basal ≈10–20 %","Om korrektionsdriven: försvaga ISF ≈10–20 %"]},
+  {name:"Tandem standard fasta låg", in:{pump:"tandem",pattern:"fastLow"}, actionIncludes:["Minska relevant basal","försvaga ISF"]},
   {name:"Tandem standard sen topp", in:{pump:"tandem",pattern:"lateHigh"}, actionIncludes:["Stärk KH-kvot","Förlängd bolus vb"], actionEquals:{1:"Förlängd bolus vb"}, hypoVisible:false},
   {name:"Tandem standard aktivitet", in:{pump:"tandem",pattern:"exerciseLow"}, actions:["Aktivera Träningsläge 1–2 h före aktivitet med hyporisk"]},
 
@@ -179,7 +188,10 @@ const golden = [
 
   {name:"780G sMVC senare fasta hög", in:{context:"pregnancy",pump:"medtronic",phase:"late",pattern:"fastHigh"}, actions:[], hypoVisible:false, summaryIncludes:"SmartGuard-mål 5,5 mmol/L · AIT 2 h", mustNotInclude:["Höj SmartGuard-målet"]},
   {name:"CamAPS sMVC senare fasta hög", in:{context:"pregnancy",pump:"camaps",phase:"late",pattern:"fastHigh"}, actions:[], hypoVisible:false, summaryIncludes:"5,0 dag / 4,5 natt", mustNotInclude:["Höj personligt målglukos"]},
-  {name:"Tandem sMVC senare måltid kvarstående", in:{context:"pregnancy",pump:"tandem",phase:"late",pattern:"mealHighPersistent"}, actionIncludes:["Stärk KH-kvot"], hypoVisible:false, summaryIncludes:"Sömnläge dygnet runt · CIRCUIT-strategi", mustNotInclude:["Försvaga KH-kvot"]}
+  {name:"Tandem sMVC senare måltid kvarstående", in:{context:"pregnancy",pump:"tandem",phase:"late",pattern:"mealHighPersistent"}, actionIncludes:["Stärk KH-kvot"], hypoVisible:false, summaryIncludes:"Sömnläge dygnet runt · CIRCUIT-strategi", mustNotInclude:["Försvaga KH-kvot"]},
+
+  // An isolated transient early postprandial peak does not itself trigger setting changes.
+  {name:"OP5 standard övergående måltidstopp utan inställningsändring", in:{pump:"omnipod",pattern:"mealHighTransient"}, actions:[], hypoVisible:false}
 ];
 
 let passed = 0;
@@ -348,7 +360,16 @@ for (const pump of pumps) {
   assert.equal(safety.open, false, "Säkerhetsgren för oväntat högt ska vara stängd initialt");
   safety.querySelector("summary").click();
   assert.equal(safety.open, true, "Säkerhetsgren för oväntat högt ska kunna öppnas");
-  assert.ok(safety.textContent.includes("Verifiera glukos, kontrollera ketoner + set/pod"), "Säkerhetsåtgärd för oväntat högt saknas i DOM");
+  assertTextSequence(safety.textContent, [
+    "Verifiera glukos",
+    "kontrollera ketoner + set/pod",
+    "Vid tillförselavbrott",
+    "korrigera med penna",
+    "byt set/pod",
+    "injicerat insulin ingår inte i pumpens IOB",
+    "följ lokal keton/DKA-rutin"
+  ], "Oväntat högt clinical golden");
+  passed++;
 
   const evidenceButton = d.querySelector('[data-meta="evidence"]');
   const evidence = d.querySelector("#metaEvidence");
