@@ -97,7 +97,17 @@ function renderedText(got) {
 }
 
 function assertCase(g, got) {
-  assert.deepEqual(got.actions, g.actions, `${g.name}: fel åtgärdsordning`);
+  if (g.actions) assert.deepEqual(got.actions, g.actions, `${g.name}: fel åtgärdsordning`);
+  if (g.actionIncludes) {
+    assert.equal(got.actions.length, g.actionIncludes.length, `${g.name}: fel antal åtgärder`);
+    g.actionIncludes.forEach((expected, index) => {
+      assert.ok(got.actions[index].includes(expected), `${g.name}: åtgärd ${index + 1} ska innehålla ${expected}`);
+    });
+  }
+  for (const [index, expected] of Object.entries(g.actionEquals || {})) {
+    assert.equal(got.actions[Number(index)], expected, `${g.name}: åtgärd ${Number(index) + 1} har fel exakt lydelse`);
+  }
+  if (g.hypoVisible !== undefined) assert.equal(got.hypoVisible, g.hypoVisible, `${g.name}: fel synlighet för hyporuta`);
   if (g.statusIncludes) assert.ok(got.pregStatus.includes(g.statusIncludes), `${g.name}: saknar status ${g.statusIncludes}`);
   if (g.summaryIncludes) assert.ok(got.pregSummary.includes(g.summaryIncludes), `${g.name}: saknar summary ${g.summaryIncludes}`);
   for (const forbidden of g.mustNotInclude || []) {
@@ -135,7 +145,25 @@ const golden = [
   {name:"Tandem sMVC fasta hög", in:{context:"pregnancy",pump:"tandem",phase:"late",pattern:"fastHigh"}, actions:["Öka relevant basal ≈10–20 %","Stärk ISF ≈10–20 %"], summaryIncludes:"Sömnläge dygnet runt"},
   {name:"780G sMVC grundinställning", in:{context:"pregnancy",pump:"medtronic",phase:"late",pattern:"mealHighPersistent"}, actions:["Stärk KH-kvot ≈10–20 %"], summaryIncludes:"SmartGuard-mål 5,5 mmol/L"},
   {name:"CamAPS sMVC tidigt mål", in:{context:"pregnancy",pump:"camaps",phase:"early",pattern:"mealHighPersistent"}, actions:["Stärk KH-kvot ≈10–20 %"], summaryIncludes:"5,5 mmol/L"},
-  {name:"CamAPS sMVC senare mål", in:{context:"pregnancy",pump:"camaps",phase:"late",pattern:"mealHighPersistent"}, actions:["Stärk KH-kvot ≈10–20 %"], summaryIncludes:"5,0 dag / 4,5 natt"}
+  {name:"CamAPS sMVC senare mål", in:{context:"pregnancy",pump:"camaps",phase:"late",pattern:"mealHighPersistent"}, actions:["Stärk KH-kvot ≈10–20 %"], summaryIncludes:"5,0 dag / 4,5 natt"},
+
+  // Promoted clinical golden cases: exact expectations reviewed independently of the behavior matrix.
+  {name:"Tandem standard måltid låg", in:{pump:"tandem",pattern:"mealLow"}, actionIncludes:["Försvaga KH-kvot"], hypoVisible:true, mustNotInclude:["Stärk KH-kvot"]},
+  {name:"780G standard måltid låg", in:{pump:"medtronic",pattern:"mealLow"}, actionIncludes:["Försvaga KH-kvot"], hypoVisible:true, mustNotInclude:["Stärk KH-kvot"]},
+  {name:"CamAPS standard måltid låg", in:{pump:"camaps",pattern:"mealLow"}, actionIncludes:["Försvaga KH-kvot"], hypoVisible:true, mustNotInclude:["Stärk KH-kvot"]},
+
+  {name:"Tandem sMVC tidigt fasta låg", in:{context:"pregnancy",pump:"tandem",phase:"early",pattern:"fastLow"}, actionIncludes:["Minska relevant basal","försvaga ISF"], hypoVisible:true, mustNotInclude:["Öka relevant basal","stärk ISF"]},
+  {name:"780G sMVC tidigt fasta låg", in:{context:"pregnancy",pump:"medtronic",phase:"early",pattern:"fastLow"}, actions:["Höj SmartGuard-målet"], hypoVisible:true, mustNotInclude:["Sätt SmartGuard-mål 5,5 mmol/L","Sätt AIT 2 h"]},
+  {name:"CamAPS sMVC tidigt fasta låg", in:{context:"pregnancy",pump:"camaps",phase:"early",pattern:"fastLow"}, actions:["Höj personligt målglukos i aktuellt segment"], hypoVisible:true, mustNotInclude:["Sänk personligt målglukos"]},
+  {name:"OP5 sMVC tidigt måltid låg", in:{context:"pregnancy",pump:"omnipod",phase:"early",pattern:"mealLow"}, actionIncludes:["Försvaga KH-kvot","Omvänd korrektion PÅ vid måltidsstart under mål"], actionEquals:{1:"Omvänd korrektion PÅ vid måltidsstart under mål"}, hypoVisible:true, statusIncludes:"off-label", mustNotInclude:["Stärk KH-kvot","Omvänd korrektion AV"]},
+  {name:"Tandem sMVC tidigt måltid låg", in:{context:"pregnancy",pump:"tandem",phase:"early",pattern:"mealLow"}, actionIncludes:["Försvaga KH-kvot"], hypoVisible:true, mustNotInclude:["Stärk KH-kvot"]},
+  {name:"780G sMVC tidigt måltid låg", in:{context:"pregnancy",pump:"medtronic",phase:"early",pattern:"mealLow"}, actionIncludes:["Försvaga KH-kvot"], hypoVisible:true, mustNotInclude:["Stärk KH-kvot"]},
+  {name:"CamAPS sMVC tidigt måltid låg", in:{context:"pregnancy",pump:"camaps",phase:"early",pattern:"mealLow"}, actionIncludes:["Försvaga KH-kvot"], hypoVisible:true, mustNotInclude:["Stärk KH-kvot"]},
+
+  {name:"OP5 sMVC senare aktivitet låg", in:{context:"pregnancy",pump:"omnipod",phase:"late",pattern:"exerciseLow"}, actions:["Höj mål vid AID / temp basal i manuellt läge"], hypoVisible:true, statusIncludes:"off-label", mustNotInclude:["Sänk målglukos","Säkerställ målglukos 6,1 mmol/L"]},
+  {name:"Tandem sMVC senare aktivitet låg", in:{context:"pregnancy",pump:"tandem",phase:"late",pattern:"exerciseLow"}, actions:["Aktivera Träningsläge 1–2 h före aktivitet med hyporisk"], hypoVisible:true, mustNotInclude:["Öka relevant basal"]},
+  {name:"780G sMVC senare aktivitet låg", in:{context:"pregnancy",pump:"medtronic",phase:"late",pattern:"exerciseLow"}, actions:["Temp mål 1–2 h före aktivitet med hyporisk"], hypoVisible:true, mustNotInclude:["Sätt SmartGuard-mål 5,5 mmol/L"]},
+  {name:"CamAPS sMVC senare aktivitet låg", in:{context:"pregnancy",pump:"camaps",phase:"late",pattern:"exerciseLow"}, actions:["Ease-off 1–2 h före aktivitet med hyporisk"], hypoVisible:true, mustNotInclude:["Sänk personligt målglukos"]}
 ];
 
 let passed = 0;
