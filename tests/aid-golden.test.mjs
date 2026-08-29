@@ -66,17 +66,46 @@ function snapshot({context="standard", pump, phase="early", pattern}) {
   if (context === "pregnancy") selectPhase(dom, phase);
   selectPattern(dom, pattern);
   const d = dom.window.document;
+  const pregOpt = d.querySelector("#pregOpt");
+  const phaseNote = d.querySelector("#pregPhaseNote");
   return {
     actions: [...d.querySelectorAll("#actions .act")].map(x => x.childNodes[0].textContent.trim()),
     menus: [...d.querySelectorAll("#actions .actmeta")].map(x => x.textContent.trim()),
     pregSummary: d.querySelector("#pregOptSummary")?.textContent.trim() || "",
     pregStatus: d.querySelector("#pregOptStatus")?.textContent.trim() || "",
     pregDetail: d.querySelector("#pregOptText")?.textContent.trim() || "",
+    pregVisible: !pregOpt?.classList.contains("hidden"),
+    phaseNote: phaseNote?.textContent.trim() || "",
+    phaseNoteVisible: !phaseNote?.classList.contains("hidden"),
     behavior: d.querySelector("#behaviorText")?.textContent.trim() || "",
-    hypoVisible: !d.querySelector("#hypoTreatment")?.classList.contains("hidden")
+    hypoVisible: !d.querySelector("#hypoTreatment")?.classList.contains("hidden"),
+    systemTips: d.querySelector("#interpretTool")?.textContent.trim() || ""
   };
 }
 
+function renderedText(got) {
+  return [
+    ...got.actions,
+    ...got.menus,
+    got.pregSummary,
+    got.pregStatus,
+    got.pregDetail,
+    got.phaseNote,
+    got.behavior,
+    got.systemTips
+  ].join("\n");
+}
+
+function assertCase(g, got) {
+  assert.deepEqual(got.actions, g.actions, `${g.name}: fel åtgärdsordning`);
+  if (g.statusIncludes) assert.ok(got.pregStatus.includes(g.statusIncludes), `${g.name}: saknar status ${g.statusIncludes}`);
+  if (g.summaryIncludes) assert.ok(got.pregSummary.includes(g.summaryIncludes), `${g.name}: saknar summary ${g.summaryIncludes}`);
+  for (const forbidden of g.mustNotInclude || []) {
+    assert.ok(!renderedText(got).includes(forbidden), `${g.name}: får inte innehålla ${forbidden}`);
+  }
+}
+
+// Clinical golden cases: independently reviewed clinical expectations.
 const golden = [
   {name:"OP5 standard fasta hög", in:{pump:"omnipod",pattern:"fastHigh"}, actions:["Sänk målglukos om >6,1 mmol/L"]},
   {name:"OP5 standard fasta låg", in:{pump:"omnipod",pattern:"fastLow"}, actions:["Höj målglukos i relevant segment"]},
@@ -112,15 +141,142 @@ const golden = [
 let passed = 0;
 for (const g of golden) {
   const got = snapshot(g.in);
-  assert.deepEqual(got.actions, g.actions, `${g.name}: fel åtgärdsordning`);
-  if (g.statusIncludes) assert.ok(got.pregStatus.includes(g.statusIncludes), `${g.name}: saknar status ${g.statusIncludes}`);
-  if (g.summaryIncludes) assert.ok(got.pregSummary.includes(g.summaryIncludes), `${g.name}: saknar summary ${g.summaryIncludes}`);
+  assertCase(g, got);
   passed++;
 }
 
-// Full regression matrix: every current pump × context × phase × pattern must render without undefined/NaN.
 const pumps = ["omnipod","tandem","medtronic","camaps"];
 const patterns = ["fastLow","fastHigh","mealHighTransient","mealHighPersistent","lateHigh","mealLow","exerciseLow"];
+const lowPatterns = new Set(["fastLow","mealLow","exerciseLow"]);
+
+const expectedActions = {
+  standard: {
+    omnipod: {
+      fastLow:["Höj målglukos i relevant segment"],
+      fastHigh:["Sänk målglukos om >6,1 mmol/L"],
+      mealHighTransient:[],
+      mealHighPersistent:["Stärk KH-kvot ≈10–20 %","Omvänd korrektion AV vid bolusreduktion under mål"],
+      lateHigh:["Stärk KH-kvot ≈10–20 %"],
+      mealLow:["Försvaga KH-kvot ≈10–20 %","Omvänd korrektion PÅ vid måltidsstart under mål"],
+      exerciseLow:["Aktivitetsfunktion 1–2 h före aktivitet med hyporisk"]
+    },
+    tandem: {
+      fastLow:["Minska relevant basal ≈10–20 %","Om korrektionsdriven: försvaga ISF ≈10–20 %"],
+      fastHigh:["Öka relevant basal ≈10–20 %","Om korrektionsdriven: stärk ISF ≈10–20 %"],
+      mealHighTransient:[],
+      mealHighPersistent:["Stärk KH-kvot ≈10–20 %"],
+      lateHigh:["Stärk KH-kvot ≈10–20 %","Förlängd bolus vb"],
+      mealLow:["Försvaga KH-kvot ≈10–20 %"],
+      exerciseLow:["Aktivera Träningsläge 1–2 h före aktivitet med hyporisk"]
+    },
+    medtronic: {
+      fastLow:["Höj SmartGuard-målet"],
+      fastHigh:["Sätt SmartGuard-mål 5,5 mmol/L","Sätt AIT 2 h"],
+      mealHighTransient:[],
+      mealHighPersistent:["Stärk KH-kvot ≈10–20 %"],
+      lateHigh:["Stärk KH-kvot ≈10–20 %"],
+      mealLow:["Försvaga KH-kvot ≈10–20 %"],
+      exerciseLow:["Temp mål 1–2 h före aktivitet med hyporisk"]
+    },
+    camaps: {
+      fastLow:["Höj personligt målglukos i aktuellt segment"],
+      fastHigh:["Sänk personligt målglukos"],
+      mealHighTransient:[],
+      mealHighPersistent:["Stärk KH-kvot ≈10–20 %"],
+      lateHigh:["Stärk KH-kvot ≈10–20 %","Långsamt absorberad måltid vb"],
+      mealLow:["Försvaga KH-kvot ≈10–20 %"],
+      exerciseLow:["Ease-off 1–2 h före aktivitet med hyporisk"]
+    }
+  },
+  pregnancy: {
+    omnipod: {
+      fastLow:["Höj målglukos i relevant segment","Minska relevant basal"],
+      fastHigh:["Säkerställ målglukos 6,1 mmol/L","Överväg manuellt nattläge med anpassad basal"],
+      mealHighTransient:[],
+      mealHighPersistent:["Stärk KH-kvot ≈10–20 %","Omvänd korrektion AV vid bolusreduktion under mål","Fantomkolhydrater vb"],
+      lateHigh:["Stärk KH-kvot ≈10–20 %","Fantomkolhydrater vb"],
+      mealLow:["Försvaga KH-kvot ≈10–20 %","Omvänd korrektion PÅ vid måltidsstart under mål"],
+      exerciseLow:["Höj mål vid AID / temp basal i manuellt läge"]
+    },
+    tandem: {
+      fastLow:["Minska relevant basal ≈10–20 %","Om korrektionsdriven: försvaga ISF ≈10–20 %"],
+      fastHigh:["Öka relevant basal ≈10–20 %","Stärk ISF ≈10–20 %"],
+      mealHighTransient:[],
+      mealHighPersistent:["Stärk KH-kvot ≈10–20 %"],
+      lateHigh:["Stärk KH-kvot ≈10–20 %","Förlängd bolus vb"],
+      mealLow:["Försvaga KH-kvot ≈10–20 %"],
+      exerciseLow:["Aktivera Träningsläge 1–2 h före aktivitet med hyporisk"]
+    },
+    medtronic: {
+      fastLow:["Höj SmartGuard-målet"],
+      fastHigh:[],
+      mealHighTransient:[],
+      mealHighPersistent:["Stärk KH-kvot ≈10–20 %"],
+      lateHigh:["Stärk KH-kvot ≈10–20 %"],
+      mealLow:["Försvaga KH-kvot ≈10–20 %"],
+      exerciseLow:["Temp mål 1–2 h före aktivitet med hyporisk"]
+    },
+    camaps: {
+      fastLow:["Höj personligt målglukos i aktuellt segment"],
+      fastHigh:[],
+      mealHighTransient:[],
+      mealHighPersistent:["Stärk KH-kvot ≈10–20 %"],
+      lateHigh:["Stärk KH-kvot ≈10–20 %","Långsamt absorberad måltid vb"],
+      mealLow:["Försvaga KH-kvot ≈10–20 %"],
+      exerciseLow:["Ease-off 1–2 h före aktivitet med hyporisk"]
+    }
+  }
+};
+
+const pregnancySummary = {
+  omnipod: {early:"Mål 6,1 mmol/L · AID/manual-läge individualiseras",late:"Mål 6,1 mmol/L · AID/manual-läge individualiseras"},
+  tandem: {early:"Sömnläge dygnet runt · CIRCUIT-strategi",late:"Sömnläge dygnet runt · CIRCUIT-strategi"},
+  medtronic: {early:"SmartGuard-mål 5,5 mmol/L · AIT 2 h",late:"SmartGuard-mål 5,5 mmol/L · AIT 2 h"},
+  camaps: {early:"Målglukos 5,5 mmol/L",late:"Mål 5,5 mmol/L · överväg 5,0 dag / 4,5 natt"}
+};
+
+const forbiddenByPump = {
+  omnipod:["SmartGuard","Sömnläge","Träningsläge","Ease-off"],
+  tandem:["SmartGuard","Ease-off","Omvänd korrektion","Fantomkolhydrater","Aktivitetsfunktion"],
+  medtronic:["Sömnläge","Träningsläge","Ease-off","Omvänd korrektion","Fantomkolhydrater","Aktivitetsfunktion"],
+  camaps:["SmartGuard","Sömnläge","Träningsläge","Omvänd korrektion","Fantomkolhydrater","Aktivitetsfunktion"]
+};
+
+// Exact behavior regression cases lock current reviewed application behavior against
+// unintended change, but are not, by themselves, independent clinical validation.
+let behaviorRegression = 0;
+for (const pump of pumps) {
+  for (const pattern of patterns) {
+    for (const context of ["standard","pregnancy"]) {
+      for (const phase of (context === "pregnancy" ? ["early","late"] : ["early"])) {
+        const name = `${pump}/${context}/${phase}/${pattern}`;
+        const got = snapshot({context,pump,phase,pattern});
+        assertCase({
+          name,
+          actions:expectedActions[context][pump][pattern],
+          mustNotInclude:forbiddenByPump[pump]
+        }, got);
+        assert.equal(got.hypoVisible, lowPatterns.has(pattern), `${name}: fel synlighet för hyporuta`);
+        assert.equal(got.pregVisible, context === "pregnancy", `${name}: fel synlighet för graviditetsstrategi`);
+        assert.equal(got.phaseNoteVisible, context === "pregnancy", `${name}: fel synlighet för graviditetsfas`);
+        if (context === "standard") {
+          assert.equal(got.pregSummary, "", `${name}: graviditetssammanfattning läcker till standardkontext`);
+          assert.equal(got.pregStatus, "", `${name}: graviditetsstatus läcker till standardkontext`);
+          assert.equal(got.pregDetail, "", `${name}: graviditetsdetaljer läcker till standardkontext`);
+          assert.equal(got.phaseNote, "", `${name}: graviditetsfas läcker till standardkontext`);
+        } else {
+          assert.equal(got.pregSummary, pregnancySummary[pump][phase], `${name}: fel graviditetssammanfattning`);
+          assert.equal(got.pregStatus, pump === "omnipod" ? "· AID off-label vid graviditet" : "", `${name}: fel graviditetsstatus`);
+          assert.ok(got.pregDetail.length > 0, `${name}: graviditetsstrategi saknas`);
+          assert.ok(got.phaseNote.length > 0, `${name}: graviditetsfastext saknas`);
+        }
+        behaviorRegression++;
+      }
+    }
+  }
+}
+
+// Full 84-case smoke matrix, retained separately from the exact clinical matrix.
 let matrix = 0;
 for (const pump of pumps) {
   for (const pattern of patterns) {
@@ -130,20 +286,35 @@ for (const pump of pumps) {
         const joined = JSON.stringify(got);
         assert.ok(!joined.includes("undefined"), `${pump}/${context}/${phase}/${pattern}: undefined i render`);
         assert.ok(!joined.includes("NaN"), `${pump}/${context}/${phase}/${pattern}: NaN i render`);
-        if (["fastLow","mealLow","exerciseLow"].includes(pattern)) {
-          assert.equal(got.hypoVisible, true, `${pump}/${context}/${phase}/${pattern}: hyporuta ska visas`);
-        }
+        assert.equal(got.hypoVisible, lowPatterns.has(pattern), `${pump}/${context}/${phase}/${pattern}: fel hyporuta`);
+        assert.equal(got.actions.length, expectedActions[context][pump][pattern].length, `${pump}/${context}/${phase}/${pattern}: oväntat antal åtgärder`);
+        assert.equal(got.pregVisible, context === "pregnancy", `${pump}/${context}/${phase}/${pattern}: kontextisolering bruten`);
         matrix++;
       }
     }
   }
 }
 
-// Global safety invariants.
-assert.ok(html.includes("Verifiera glukos, kontrollera ketoner + set/pod"), "Säkerhetsgren för oväntat högt saknas");
-assert.ok(html.includes("AID off-label vid graviditet"), "Omnipod graviditet saknar off-label-markering");
-assert.ok(html.includes("Aktuell IFU, regulatorisk status och lokal rutin har företräde"), "Scope/säkerhetsdisclaimer saknas");
+// Safety and disclosure behavior must work in the rendered DOM.
+{
+  const dom = makeDom();
+  selectContext(dom, "standard");
+  const d = dom.window.document;
+  const safety = d.querySelector(".safety-high");
+  assert.equal(safety.open, false, "Säkerhetsgren för oväntat högt ska vara stängd initialt");
+  safety.querySelector("summary").click();
+  assert.equal(safety.open, true, "Säkerhetsgren för oväntat högt ska kunna öppnas");
+  assert.ok(safety.textContent.includes("Verifiera glukos, kontrollera ketoner + set/pod"), "Säkerhetsåtgärd för oväntat högt saknas i DOM");
 
-console.log(`PASS: ${passed} golden cases`);
-console.log(`PASS: ${matrix} matrix cases`);
-console.log("PASS: safety invariants");
+  const evidenceButton = d.querySelector('[data-meta="evidence"]');
+  const evidence = d.querySelector("#metaEvidence");
+  assert.ok(evidence.classList.contains("hidden"), "Evidens/scope ska vara dold initialt");
+  evidenceButton.click();
+  assert.ok(!evidence.classList.contains("hidden"), "Evidens/scope ska kunna visas");
+  assert.ok(evidence.textContent.includes("Aktuell IFU, regulatorisk status och lokal rutin har företräde"), "Scope/säkerhetsdisclaimer saknas i DOM");
+}
+
+console.log(`PASS: ${passed} clinical golden cases`);
+console.log(`PASS: ${behaviorRegression} exact behavior regression cases`);
+console.log(`PASS: ${matrix} smoke matrix cases`);
+console.log("PASS: safety and isolation invariants");
