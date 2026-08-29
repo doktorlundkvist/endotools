@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+<!-- v174 · 2026-08-29: Recommendation wording tightened; redundant context prefixes removed. -->
 <html lang="sv">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AID-lathund v170</title>
-<meta name="description" content="Systemspecifik AID-lathund för klinisk pilot.">
+<title>AID-lathund v174</title>
+<meta name="description" content="Systemspecifik AID-lathund för klinisk pilot · v174.">
 <style>
 :root{
   --bg:#f5f7f9;--card:#fff;--text:#17202a;--muted:#667085;--line:#d9e0e7;
@@ -311,7 +312,7 @@ button:focus-visible,summary:focus-visible,select:focus-visible{
   <div class="footer">
     <div>
       <div class="footer-meta">
-        <span>v170</span>
+        <span>v174 · Clinical RC</span>
         <span>·</span>
         <button class="meta-link" type="button" data-meta="evidence">Evidens / scope ⓘ</button>
         <span>·</span>
@@ -319,11 +320,11 @@ button:focus-visible,summary:focus-visible,select:focus-visible{
       </div>
       <div id="metaEvidence" class="meta-pop hidden">
         <b>Scope:</b> Release candidate för klinisk pilot. Kliniskt beslutsstöd, inte automatisk dosordination. Formell extern användarvalidering återstår.
-        Aktuell IFU och lokal rutin har företräde.
+        Aktuell IFU, regulatorisk status och lokal rutin har företräde. Systemspecifika råd gäller endast angiven system-/programversion.
       </div>
       <div id="metaSources" class="meta-pop hidden">
-        <b>Källor:</b> ADA Standards of Care 2026; aktuell IFU/HCP-information för Omnipod 5, Control-IQ+, MiniMed 780G och CamAPS FX; CIRCUIT 2025 och AiDAPT 2023. Menyvägar och indikationer verifierade 2026-08-28.
-        ≈10–20 % är pragmatiskt titreringssteg, inte formell tröskel.
+        <b>Källor · verifierade 2026-08-29:</b> ADA Standards of Care 2026; Szmuilowicz &amp; Feig, Diabetes Spectrum 2025 (praktisk AID-optimering i graviditet); Omnipod 5 svenska produktguider v08/25; MiniMed 780G svensk produktinformation och systemutbildningsguide 2026-02; Tandem Control-IQ+ CE-indikation för graviditet 2026-06-05 samt CIRCUIT (JAMA 2025); CamAPS FX aktuell graviditetsguide 2026 samt AiDAPT (NEJM 2023).
+        ≈10–20 % är pragmatiskt titreringssteg, inte formell tröskel. Menyvägar ska omverifieras vid program-/appuppdatering.
       </div>
     </div>
   </div>
@@ -466,7 +467,7 @@ function renderPregPhaseNote(){
   }
 
   el.textContent = phase.value==='early'
-    ? 'Ökad känslighet/hyporisk → dosreducera vb. Illamående/osäkert intag → dela eller senarelägg bolus.'
+    ? 'Ökad känslighet/hyporisk → dosreducera vb. Vid illamående/osäkert intag: individualisera bolustiming/delning enligt sMVC-rutin.'
     : 'Insulinbehovet stiger ofta → titrera tätare vid kvarstående hyperglykemi.';
   el.classList.remove('hidden');
 }
@@ -487,24 +488,24 @@ function pregOptimization(){
 
   const ph=phase.value;
   const summary = {
-    tandem:'Sömnläge dygnet runt',
+    tandem:'Sömnläge dygnet runt · CIRCUIT-strategi',
     medtronic:'SmartGuard-mål 5,5 mmol/L · AIT 2 h',
-    omnipod:'Målglukos 6,1 mmol/L',
+    omnipod:'Mål 6,1 mmol/L · AID/manual-läge individualiseras',
     camaps: ph==='early'
       ? 'Målglukos 5,5 mmol/L'
       : 'Mål 5,5 mmol/L · överväg 5,0 dag / 4,5 natt'
   };
 
   const details = {
-    tandem:'Graviditetsindikation gäller Control-IQ+ med kompatibel CGM för graviditet; verifiera programversion. Sökväg: Inställningar → Aktivitetsprofil → Sömn. Använd Sömnläge 24/7. Om boluskalkylatorn föreslår bolusreduktion vid glukos <6,1 mmol/L: välj Nej.' +
+    tandem:'Control-IQ+ är CE-godkänd för T1D under graviditet; verifiera kompatibel CGM och programversion. Sömnläge 24/7 är en graviditetsstrategi med stöd från CIRCUIT, inte en generell IFU-standard. Sökväg: Inställningar → Aktivitetsprofil → Sömn. Om boluskalkylatorn föreslår bolusreduktion vid glukos <6,1 mmol/L: följ graviditetsprotokoll/lokal rutin.' +
       (ph==='late' ? ' Efter v.20: vid kvarstående hyperglykemi kan basalprofilen behöva ligga cirka 20 % över genomsnittligt levererad basal senaste 1–2 veckorna.' : ''),
-    medtronic:'SmartGuard-mål: SmartGuard → SmartGuard-inställningar → SmartGuard-mål. AIT: Doseringsinställningar → Bolus Wizard-inställning → Aktiv insulintid.',
-    omnipod:'Sökväg: Omnipod 5-app → Inställningar → Bolus → Målvärde för glukos. SmartAdjust ska enligt aktuell IFU inte användas under graviditet.',
-    camaps:'Sökväg: Meny → Inställningar → Personligt målglukosvärde. Tidigt: omkring 5,5 mmol/L. Från v.16: överväg 5,0 mmol/L dagtid och 4,5 mmol/L nattetid. Uppdatera kroppsvikt cirka var 4:e vecka.'
+    medtronic:'MiniMed 780G är enligt aktuell svensk produktinformation godkänd för gravida. Rekommenderade optimala systeminställningar är SmartGuard-mål 5,5 mmol/L och AIT 2 h. SmartGuard-mål: SmartGuard → SmartGuard-inställningar → SmartGuard-mål. AIT: Doseringsinställningar → Bolus Wizard-inställning → Aktiv insulintid.',
+    omnipod:'AID används off-label under graviditet. Använd lägsta mål 6,1 mmol/L och optimera bolustiming/KH-kvot. Om fasta fortsatt ligger över graviditetsmål: överväg manuellt läge under relevanta tidssegment, ofta nattetid, med graviditetsanpassad basal utifrån aktuell CGM och levererad basal. Håll manualbasalen uppdaterad eftersom den används vid manuellt läge/sensoravbrott. Assistiva bolustekniker, inklusive fantomkolhydrater, individualiseras.',
+    camaps:'Sökväg: Meny → Inställningar → Personligt målglukosvärde. Tidigt: omkring 5,5 mmol/L. Från v.16: överväg 5,0 mmol/L dagtid och 4,5 mmol/L nattetid när kliniskt lämpligt och överenskommet med diabetesteamet.'
   };
 
   $('pregOptSummary').textContent=summary[pump.value];
-  $('pregOptStatus').textContent = pump.value==='omnipod' ? ' · Omnipod 5 ej godkänd för gravida' : '';
+  $('pregOptStatus').textContent = pump.value==='omnipod' ? ' · AID off-label vid graviditet' : '';
   $('pregOptText').textContent=details[pump.value];
   el.classList.remove('hidden');
 }
@@ -546,7 +547,7 @@ function systemTipsHelp(p){
       '<div class="rline"><b>Sömnläge:</b> inga autokorrigeringsbolusar.</div>' +
       '<div class="rline"><b>ISF:</b> påverkar basalmodulering och autokorrigering.</div>',
     omnipod:
-      '<div class="rline"><b>Basalprogram:</b> påverkar inte SmartAdjust.</div>' +
+      '<div class="rline"><b>Basalprogram:</b> påverkar inte SmartAdjust; håll det ändå uppdaterat för manuellt läge/sensoravbrott.</div>' +
       '<div class="rline"><b>Målglukos:</b> enda direkta reglaget för automatiserad insulintillförsel.</div>' +
       '<div class="rline"><b>Aktivitetsfunktion:</b> boluskalkylatorn använder ordinarie mål, inte 8,3 mmol/L.</div>',
     camaps:
@@ -574,7 +575,7 @@ function renderHypoTreatment(){
   }
 }
 
-function ev(code){ return code==='SYS'?'SYS':code==='RCT'?'RCT':'KONS'; }
+function ev(code){ return ['SYS','RCT','EXPERT'].includes(code)?code:'KONS'; }
 function add(A,title,menu,evidence='KONS'){A.push({title,menu,evidence});}
 
 function getActions(){
@@ -625,25 +626,42 @@ function getActions(){
   }
 
   if(p==='omnipod'){
-    if(pat==='fastHigh' && !preg) add(A,'Sänk målglukos om >6,1 mmol/L',P.target,'SYS');
-    if(pat==='fastHigh' && preg){
-      add(A,'Säkerställ målglukos 6,1 mmol/L',P.target,'SYS');
-      add(A,'Överväg manuellt läge nattetid med anpassad basal','Omnipod 5-app → Meny → Växla läge','KONS');
-    }
-    if(pat==='mealHighPersistent'){
-      add(A,'Stärk KH-kvot '+khStep,P.icr,'KONS');
-      add(A,'Vid bolusreduktion under mål: Omvänd korrektion AV','Omnipod 5-app → Inställningar → Bolus → Omvänd korrektion','SYS');
-      if(preg) add(A,'Vid behov: falska KH','Patientåtgärd','KONS');
-    }
-    if(pat==='lateHigh'){
-      add(A,'Stärk KH-kvot '+khStep,P.icr,'KONS');
-      if(preg) add(A,'Vid behov: falska KH','Patientåtgärd','KONS');
-    }
-    if(pat==='fastLow') add(A,'Höj målglukos i relevant segment',P.target,'SYS');
-    if(pat==='exerciseLow') add(A,'Aktivitetsfunktion 1–2 h före aktivitet med hyporisk',P.activity,'SYS');
-    if(pat==='mealLow'){
-      add(A,'Försvaga KH-kvot ≈10–20 %',P.icr,'KONS');
-      add(A,'Vid måltidsstart under mål: Omvänd korrektion PÅ','Omnipod 5-app → Inställningar → Bolus → Omvänd korrektion','SYS');
+    if(preg){
+      if(pat==='fastHigh'){
+        add(A,'Säkerställ målglukos 6,1 mmol/L',P.target,'EXPERT');
+        add(A,'Överväg manuellt nattläge med anpassad basal','Omnipod 5-app → Meny → Växla läge','EXPERT');
+      }
+      if(pat==='fastLow'){
+        add(A,'Höj målglukos i relevant segment',P.target,'EXPERT');
+        add(A,'Minska relevant basal', 'Basalprogram → relevant tidssegment','EXPERT');
+      }
+      if(pat==='mealHighPersistent'){
+        add(A,'Stärk KH-kvot '+khStep,P.icr,'KONS');
+        add(A,'Omvänd korrektion AV vid bolusreduktion under mål','Omnipod 5-app → Inställningar → Bolus → Omvänd korrektion','SYS');
+        add(A,'Fantomkolhydrater vb','Patientåtgärd','EXPERT');
+      }
+      if(pat==='lateHigh'){
+        add(A,'Stärk KH-kvot '+khStep,P.icr,'KONS');
+        add(A,'Fantomkolhydrater vb','Patientåtgärd','EXPERT');
+      }
+      if(pat==='exerciseLow') add(A,'Höj mål vid AID / temp basal i manuellt läge',P.activity,'EXPERT');
+      if(pat==='mealLow'){
+        add(A,'Försvaga KH-kvot ≈10–20 %',P.icr,'KONS');
+        add(A,'Omvänd korrektion PÅ vid måltidsstart under mål','Omnipod 5-app → Inställningar → Bolus → Omvänd korrektion','SYS');
+      }
+    } else {
+      if(pat==='fastHigh') add(A,'Sänk målglukos om >6,1 mmol/L',P.target,'SYS');
+      if(pat==='mealHighPersistent'){
+        add(A,'Stärk KH-kvot '+khStep,P.icr,'KONS');
+        add(A,'Omvänd korrektion AV vid bolusreduktion under mål','Omnipod 5-app → Inställningar → Bolus → Omvänd korrektion','SYS');
+      }
+      if(pat==='lateHigh') add(A,'Stärk KH-kvot '+khStep,P.icr,'KONS');
+      if(pat==='fastLow') add(A,'Höj målglukos i relevant segment',P.target,'SYS');
+      if(pat==='exerciseLow') add(A,'Aktivitetsfunktion 1–2 h före aktivitet med hyporisk',P.activity,'SYS');
+      if(pat==='mealLow'){
+        add(A,'Försvaga KH-kvot ≈10–20 %',P.icr,'KONS');
+        add(A,'Omvänd korrektion PÅ vid måltidsstart under mål','Omnipod 5-app → Inställningar → Bolus → Omvänd korrektion','SYS');
+      }
     }
   }
   return A;
@@ -657,7 +675,8 @@ function renderActions(){
   const evText = {
     SYS:'Systemspecifik manual/IFU',
     RCT:'Randomiserad studie / graviditetsspecifik evidens',
-    KONS:'Konsensus / expertstöd'
+    KONS:'Konsensus / klinisk titrering',
+    EXPERT:'Specialiststöd'
   };
 
   function adjustmentExample(title){
@@ -729,7 +748,7 @@ function renderBehavior(){
   }
 
   if(currentPattern==='mealLow'){
-    html='Tidig hypo: senarelägg bolus 5–10 min åt gången.';
+    html='Tidig hypo: bedöm först KH-kvot, KH-mängd och bolustiming. Vid tydligt för tidig bolus: senarelägg 5–10 min åt gången.';
   }
 
   if(html){
