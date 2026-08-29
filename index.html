@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- v175 · 2026-08-29: Recommendation wording tightened; redundant context prefixes removed. -->
+<!-- v176 · 2026-08-29: Recommendation wording tightened; redundant context prefixes removed. -->
 <html lang="sv">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AID-lathund v175</title>
-<meta name="description" content="Systemspecifik AID-lathund för klinisk pilot · v175.">
+<title>AID-lathund v176</title>
+<meta name="description" content="Systemspecifik AID-lathund för klinisk pilot · v176.">
 <style>
 :root{
   --bg:#f5f7f9;--card:#fff;--text:#17202a;--muted:#667085;--line:#d9e0e7;
@@ -157,6 +157,7 @@ select{width:100%;border:0;background:transparent;font:inherit;font-weight:750;c
 .patbtn.active{background:var(--blue2);border-color:#9fc1e3;color:#194f88}
 .catbtn:hover,.patbtn:hover{border-color:#b8c5d2}
 .precheck{margin:6px 0 8px;font-size:10.5px;color:#667085}
+.precheck-conclusion{margin:10px 0 10px;font-size:13.5px;font-weight:800;color:#344054}
 .hypo-treatment{
   margin:8px 0 0;
   padding:8px 10px;
@@ -313,7 +314,7 @@ button:focus-visible,summary:focus-visible,select:focus-visible{
   <div class="footer">
     <div>
       <div class="footer-meta">
-        <span>v175 · Clinical RC</span>
+        <span>v176 · Clinical RC</span>
         <span>·</span>
         <button class="meta-link" type="button" data-meta="evidence">Evidens / scope ⓘ</button>
         <span>·</span>
@@ -562,7 +563,7 @@ function renderPrecheck(){
   const pat=currentPattern;
   const noAdjustment=getActions().length===0;
   $('precheck').innerHTML = noAdjustment
-    ? '<div class="precheck"><b>Grundinställningar optimerade?</b></div>'
+    ? '<div class="precheck precheck-conclusion"><b>Grundinställningar optimerade?</b></div>'
     : pat==='fastLow'
       ? '<div class="precheck">Isolerat nattligt CGM-lågt: uteslut kompressionsartefakt.</div>'
       : '';
