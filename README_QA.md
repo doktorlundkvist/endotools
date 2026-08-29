@@ -1,18 +1,23 @@
-# AID QA / release gate
+# AID QA och release-gate
 
-Filerna i detta paket läggs i repots rot med samma mappstruktur.
+Repositoryt har två GitHub Actions-workflows:
 
-- `package.json`
-- `tests/aid-golden.test.mjs`
-- `.github/workflows/aid-qa.yml`
-- `.github/workflows/pages.yml`
+- `.github/workflows/aid-qa.yml` kör QA på pull requests mot `main`.
+- `.github/workflows/pages.yml` kör QA på push till `main` och deployar till
+  GitHub Pages endast när QA-jobbet har passerat.
+
+Båda installerar låsta npm-beroenden med `npm ci` och kör `npm test`.
 
 Testsviten innehåller:
+
 - 24 kliniska golden cases med exakt förväntad åtgärdsordning
-- 84 fulla matrisfall (4 pumpar × standard + två sMVC-faser × 7 mönster)
+- 84 matrisfall (4 pumpar × standard + två sMVC-faser × 7 mönster)
 - säkerhetsinvarianter
 
-För en verklig release-gate måste GitHub Pages efter uppladdningen ändras:
-Settings → Pages → Build and deployment → Source → GitHub Actions.
+Pages-workflowen skapar en separat staging-katalog som endast innehåller
+`index.html`. Repositoryts tester, konfiguration och dokumentation publiceras
+inte i Pages-artifakten.
 
-Då kör `pages.yml` testerna först. Deployment körs endast om clinical-qa passerar.
+GitHub Pages måste vara konfigurerat med **Source: GitHub Actions** under
+Settings → Pages → Build and deployment. Workflowens `clinical-qa`-jobb är en
+release-gate: deploymentjobbet körs endast om testerna passerar.
