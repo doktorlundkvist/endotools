@@ -1,6 +1,11 @@
 name: AID clinical QA
 
 on:
+  push:
+    branches:
+      - "codex/**"
+      - "aid/**"
+      - "release/**"
   pull_request:
     branches: [main]
 
