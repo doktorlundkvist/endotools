@@ -78,12 +78,12 @@ function assertCase(g,got){
 const E={
  standard:{
   omnipod:{fastLow:["Höj målglukos i relevant segment"],fastHigh:["Sänk målglukos om >6,1 mmol/L"],mealHighTransient:[],mealHighPersistent:["Stärk KH-kvot ≈10–20 %","Omvänd korrektion AV vid bolusreduktion under mål"],lateHigh:["Stärk KH-kvot ≈10–20 %"],mealLow:["Försvaga KH-kvot ≈10–20 %","Omvänd korrektion PÅ vid måltidsstart under mål"],exerciseLow:["Starta \"Aktivitet\" 1–2 h före aktivitet som brukar sänka glukos"]},
-  tandem:{fastLow:["Minska relevant basal ≈10–20 %","Om korrektionsdriven: försvaga ISF ≈10–20 %"],fastHigh:["Öka relevant basal ≈10–20 %","Om korrektionsdriven: stärk ISF ≈10–20 %"],mealHighTransient:[],mealHighPersistent:["Stärk KH-kvot ≈10–20 %"],lateHigh:["Stärk KH-kvot ≈10–20 %","Förlängd bolus vb"],mealLow:["Försvaga KH-kvot ≈10–20 %"],exerciseLow:["Starta \"Träning\" 1–2 h före aktivitet som brukar sänka glukos"]},
+  tandem:{fastLow:["Försvaga ISF ≈10–20 %","Vid för kraftig basalmodulering: minska relevant basal ≈10–20 %"],fastHigh:["Stärk ISF ≈10–20 %","Vid otillräcklig basalmodulering: öka relevant basal ≈10–20 %"],mealHighTransient:[],mealHighPersistent:["Stärk KH-kvot ≈10–20 %"],lateHigh:["Stärk KH-kvot ≈10–20 %","Förlängd bolus vb"],mealLow:["Försvaga KH-kvot ≈10–20 %"],exerciseLow:["Starta \"Träning\" 1–2 h före aktivitet som brukar sänka glukos"]},
   medtronic:{fastLow:["Höj SmartGuard-målet"],fastHigh:["Sätt SmartGuard-mål 5,5 mmol/L","Sätt AIT 2 h"],mealHighTransient:[],mealHighPersistent:["Stärk KH-kvot ≈10–20 %"],lateHigh:["Stärk KH-kvot ≈10–20 %"],mealLow:["Försvaga KH-kvot ≈10–20 %"],exerciseLow:["Starta \"Temp mål\" 1–2 h före aktivitet som brukar sänka glukos"]},
   camaps:{fastLow:["Höj personligt målglukos i aktuellt segment"],fastHigh:["Sänk personligt målglukos"],mealHighTransient:[],mealHighPersistent:["Stärk KH-kvot ≈10–20 %"],lateHigh:["Stärk KH-kvot ≈10–20 %","Långsamt absorberad måltid vb"],mealLow:["Försvaga KH-kvot ≈10–20 %","Vid sen hypo: höj personligt målglukos i relevant segment"],exerciseLow:["Starta \"Ease-off\" 1–2 h före aktivitet som brukar sänka glukos"]}
  },
  pregnancy:{
-  tandem:{fastLow:["Minska relevant basal ≈10–20 %","Om korrektionsdriven: försvaga ISF ≈10–20 %"],fastHigh:["Öka relevant basal ≈10–20 %","Stärk ISF ≈10–20 %"],mealHighTransient:[],mealHighPersistent:["Stärk KH-kvot ≈10–20 %"],lateHigh:["Stärk KH-kvot ≈10–20 %","Förlängd bolus vb"],mealLow:["Försvaga KH-kvot ≈10–20 %"],exerciseLow:["Starta \"Träning\" 1–2 h före aktivitet som brukar sänka glukos"]},
+  tandem:{fastLow:["Försvaga ISF ≈10–20 %","Vid för kraftig basalmodulering: minska relevant basal ≈10–20 %"],fastHigh:["Stärk ISF ≈10–20 %","Vid otillräcklig basalmodulering: öka relevant basal ≈10–20 %"],mealHighTransient:[],mealHighPersistent:["Stärk KH-kvot ≈10–20 %"],lateHigh:["Stärk KH-kvot ≈10–20 %","Förlängd bolus vb"],mealLow:["Försvaga KH-kvot ≈10–20 %"],exerciseLow:["Starta \"Träning\" 1–2 h före aktivitet som brukar sänka glukos"]},
   medtronic:{fastLow:["Höj SmartGuard-målet"],fastHigh:[],mealHighTransient:[],mealHighPersistent:["Stärk KH-kvot ≈10–20 %"],lateHigh:["Stärk KH-kvot ≈10–20 %"],mealLow:["Försvaga KH-kvot ≈10–20 %"],exerciseLow:["Starta \"Temp mål\" 1–2 h före aktivitet som brukar sänka glukos"]},
   camaps:{fastLow:["Höj personligt målglukos i aktuellt segment"],fastHigh:[],mealHighTransient:[],mealHighPersistent:["Stärk KH-kvot ≈10–20 %"],lateHigh:["Stärk KH-kvot ≈10–20 %","Långsamt absorberad måltid vb"],mealLow:["Försvaga KH-kvot ≈10–20 %","Vid sen hypo: höj personligt målglukos i relevant segment"],exerciseLow:["Starta \"Ease-off\" 1–2 h före aktivitet som brukar sänka glukos"]},
   omnipod:{
@@ -153,12 +153,12 @@ for(const pump of pumps) for(const pattern of patterns) for(const context of ["s
   matrix++;
 }
 assert.equal(matrix,84);
-assert.ok(html.includes("AID-lathund v182"),"v182-version saknas");
-assert.ok(html.includes("Källor · verifierade 2026-08-31"),"källverifieringsdatum saknas");
+assert.ok(html.includes("AID-lathund v183"),"v183-version saknas");
+assert.ok(html.includes("Källor · verifierade 2026-09-02"),"källverifieringsdatum saknas");
 assert.ok(html.includes("EASD/ISPAD position statement om AID vid fysisk aktivitet"),"aktivitetsreferens saknas");
 assert.ok(!html.includes("Fantomkolhydrater"),"Föråldrad term Fantomkolhydrater finns kvar");
 
-// v182-specific clinical regression gates.
+// v183-specific clinical regression gates.
 {
   const earlyHigh=snapshot({context:"pregnancy",pump:"omnipod",phase:"early",pattern:"mealHighPersistent"});
   assert.ok(!renderedText(earlyHigh).includes("Omvänd korrektion"),"OP5 sMVC v0–15: omvänd korrektion får inte visas");
@@ -179,6 +179,20 @@ assert.ok(!html.includes("Fantomkolhydrater"),"Föråldrad term Fantomkolhydrate
     assert.ok(got.actions[0].includes(`\"${label}\"`),`${pump}: fel aktivitetsnamn`);
     assert.ok(got.notes[0].includes("Konsensus / klinisk titrering"),`${pump}: fel aktivitetsevidens`);
   }
+
+  const tandemHigh=snapshot({pump:"tandem",pattern:"fastHigh"});
+  assert.equal(tandemHigh.actions[0],"Stärk ISF ≈10–20 %","Tandem fastehögt: ISF ska vara första autolägesreglage");
+  assert.ok(tandemHigh.actions[1].startsWith("Vid otillräcklig basalmodulering"),"Tandem fastehögt: basal ska vara villkorat andrasteg");
+  const tandemLow=snapshot({pump:"tandem",pattern:"fastLow"});
+  assert.equal(tandemLow.actions[0],"Försvaga ISF ≈10–20 %","Tandem fastelågt: ISF ska vara första autolägesreglage");
+  assert.ok(tandemLow.actions[1].startsWith("Vid för kraftig basalmodulering"),"Tandem fastelågt: basal ska vara villkorat andrasteg");
+
+  const dom=makeDom(); selectContext(dom,"standard"); selectPump(dom,"camaps");
+  const camTips=dom.window.document.querySelector("#interpretTool").textContent;
+  assert.ok(camTips.includes("Basalprofil: styr inte autoläget"),"CamAPS: basalprofilens roll i autoläge saknas");
+  assert.ok(camTips.includes("manuellt läge/sensoravbrott"),"CamAPS: basalprofilens reservfunktion saknas");
+  assert.ok(camTips.includes("CamAPS Liberty är inte infört i svenska kliniska råd"),"CamAPS Liberty: versionsbevakning saknas");
+  assert.ok(camTips.includes("graviditetsindikation före implementation"),"CamAPS Liberty: blockerande graviditetskontroll saknas");
 }
 
 // Existing safety/disclosure gates.
@@ -198,5 +212,5 @@ assert.ok(!html.includes("Fantomkolhydrater"),"Föråldrad term Fantomkolhydrate
 console.log(`PASS: ${passed} clinical golden cases`);
 console.log(`PASS: ${behaviorRegression} exact behavior regression cases`);
 console.log(`PASS: ${matrix} smoke matrix cases`);
-console.log("PASS: v182-specific evidence/icon/path/source invariants");
+console.log("PASS: v183-specific auto/basal/evidence/icon/path/source invariants");
 console.log("PASS: safety and isolation invariants");

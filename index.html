@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- v182 · 2026-08-31: Golden-release RC; v180 action-icon design retained, evidence labels corrected and physical-activity source completed. -->
+<!-- v183 · 2026-09-02: Faste-/autolägeslogik harmoniserad med sMVC-föreläsningen; basalprofil skiljs från direkt autolägesreglage; Liberty versionsbevakas utan klinisk algoritmändring. -->
 <html lang="sv">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AID-lathund v182</title>
-<meta name="description" content="Systemspecifik AID-lathund för klinisk pilot · v182.">
+<title>AID-lathund v183</title>
+<meta name="description" content="Systemspecifik AID-lathund för klinisk pilot · v183.">
 <style>
 :root{
   --bg:#f5f7f9;--card:#fff;--text:#17202a;--muted:#667085;--line:#d9e0e7;
@@ -318,7 +318,7 @@ button:focus-visible,summary:focus-visible,select:focus-visible{
   <div class="footer">
     <div>
       <div class="footer-meta">
-        <span>v182 · Clinical RC</span>
+        <span>v183 · Clinical RC</span>
         <span>·</span>
         <button class="meta-link" type="button" data-meta="evidence">Evidens / scope ⓘ</button>
         <span>·</span>
@@ -329,7 +329,7 @@ button:focus-visible,summary:focus-visible,select:focus-visible{
         Aktuell IFU, regulatorisk status och lokal rutin har företräde. Systemspecifika råd gäller endast angiven system-/programversion.
       </div>
       <div id="metaSources" class="meta-pop hidden">
-        <b>Källor · verifierade 2026-08-31:</b> ADA Standards of Care 2026; Szmuilowicz &amp; Feig, Diabetes Spectrum 2025 (praktisk AID-optimering i graviditet); Omnipod 5 svenska produktguider v08/25; MiniMed 780G svensk produktinformation och systemutbildningsguide 2026-02; Tandem Control-IQ+ CE-indikation för graviditet 2026-06-05 samt CIRCUIT (JAMA 2025); CamAPS FX aktuell graviditetsguide 2026 samt AiDAPT (NEJM 2023); Moser et al., EASD/ISPAD position statement om AID vid fysisk aktivitet (Diabetologia 2025).
+        <b>Källor · verifierade 2026-09-02:</b> ADA Standards of Care 2026; Szmuilowicz &amp; Feig, Diabetes Spectrum 2025 (praktisk AID-optimering i graviditet); Omnipod 5 svenska produktguider v08/25; MiniMed 780G svensk produktinformation och systemutbildningsguide 2026-02; Tandem Control-IQ+ CE-indikation för graviditet 2026-06-05 samt CIRCUIT (JAMA 2025); CamAPS FX aktuell graviditetsguide 2026 samt AiDAPT (NEJM 2023); Moser et al., EASD/ISPAD position statement om AID vid fysisk aktivitet (Diabetologia 2025).
         ≈10–20 % är pragmatiskt titreringssteg, inte formell tröskel. Menyvägar ska omverifieras vid program-/appuppdatering.
       </div>
     </div>
@@ -504,7 +504,7 @@ function pregOptimization(){
 
   const details = {
     tandem:'Control-IQ+ är CE-godkänd för T1D under graviditet; verifiera kompatibel CGM och programversion. Sömnläge 24/7 är en graviditetsstrategi med stöd från CIRCUIT, inte en generell IFU-standard. Sökväg: Inställningar → Aktivitetsprofil → Sömn. Om boluskalkylatorn föreslår bolusreduktion vid glukos <6,1 mmol/L: följ graviditetsprotokoll/lokal rutin.' +
-      (ph==='late' ? ' Efter v.20: vid kvarstående hyperglykemi kan basalprofilen behöva ligga cirka 20 % över genomsnittligt levererad basal senaste 1–2 veckorna.' : ''),
+      (ph==='late' ? ' Efter v.20: om basalmoduleringen inte räcker trots optimerad ISF kan basalprofilen behöva ligga cirka 20 % över genomsnittligt levererad basal senaste 1–2 veckorna.' : ''),
     medtronic:'MiniMed 780G är enligt aktuell svensk produktinformation godkänd för gravida. Rekommenderade optimala systeminställningar är SmartGuard-mål 5,5 mmol/L och AIT 2 h. SmartGuard-mål: SmartGuard → SmartGuard-inställningar → SmartGuard-mål. AIT: Doseringsinställningar → Bolus Wizard-inställning → Aktiv insulintid.',
     omnipod:'AID används off-label under graviditet. Använd lägsta mål 6,1 mmol/L och optimera bolustiming/KH-kvot. Om fasta fortsatt ligger över graviditetsmål: överväg manuellt läge under relevanta tidssegment, ofta nattetid, med graviditetsanpassad basal utifrån aktuell CGM och levererad basal. Håll manualbasalen uppdaterad eftersom den används vid manuellt läge/sensoravbrott. Assistiva bolustekniker, inklusive falska KH, individualiseras.',
     camaps:'Sökväg: Meny → Inställningar → Personligt målglukosvärde. Tidigt: omkring 5,5 mmol/L. Från v.16: överväg 5,0 mmol/L dagtid och 4,5 mmol/L nattetid när kliniskt lämpligt och överenskommet med diabetesteamet.'
@@ -551,13 +551,16 @@ function systemTipsHelp(p){
       '<div class="rline"><b>Falska KH:</b> använd inte.</div>',
     tandem:
       '<div class="rline"><b>"Sömn":</b> inga autokorrigeringsbolusar.</div>' +
-      '<div class="rline"><b>ISF:</b> påverkar basalmodulering och autokorrigering.</div>',
+      '<div class="rline"><b>ISF:</b> påverkar basalmodulering och autokorrigering; justera detta först när auto behöver bli mer eller mindre aggressivt.</div>' +
+      '<div class="rline"><b>Basalprofil:</b> används av Control-IQ som utgångsläge för basalmodulering. Justera vid otillräcklig eller för kraftig basalmodulering – inte som ett generellt första autolägesreglage.</div>',
     omnipod:
       '<div class="rline"><b>Basalprogram:</b> påverkar inte SmartAdjust; håll det ändå uppdaterat för manuellt läge/sensoravbrott.</div>' +
       '<div class="rline"><b>Målglukos:</b> enda direkta reglaget för automatiserad insulintillförsel.</div>' +
       '<div class="rline"><b>"Aktivitet":</b> boluskalkylatorn använder ordinarie mål, inte 8,3 mmol/L.</div>',
     camaps:
-      '<div class="rline"><b>"Boost":</b> algoritmen räknar med ≈35 % högre insulinbehov; målglukos är oförändrat.</div>'
+      '<div class="rline"><b>Basalprofil:</b> styr inte autoläget; justera den inte för att styra auto. Håll den uppdaterad för manuellt läge/sensoravbrott.</div>' +
+      '<div class="rline"><b>"Boost":</b> algoritmen räknar med ≈35 % högre insulinbehov; målglukos är oförändrat.</div>' +
+      '<div class="rline"><b>Versionsbevakning:</b> CamAPS Liberty är inte infört i svenska kliniska råd. Verifiera svensk tillgänglighet, aktuell IFU och graviditetsindikation före implementation.</div>'
   };
 
   return `<details class="detailsbox"><summary>Systemtips ⓘ</summary>${specific[p]}</details>`;
@@ -620,9 +623,8 @@ function getActions(){
 
   if(p==='tandem'){
     if(pat==='fastHigh'){
-      add(A,'Öka relevant basal ≈10–20 %',P.basal,'KONS');
-      if(preg) add(A,'Stärk ISF ≈10–20 %',P.cf,'KONS');
-      else add(A,'Om korrektionsdriven: stärk ISF ≈10–20 %',P.cf,'KONS');
+      add(A,'Stärk ISF ≈10–20 %',P.cf,'KONS');
+      add(A,'Vid otillräcklig basalmodulering: öka relevant basal ≈10–20 %',P.basal,'KONS');
     }
     if(pat==='mealHighPersistent') add(A,'Stärk KH-kvot '+khStep,P.icr,'KONS');
     if(pat==='lateHigh'){
@@ -630,8 +632,8 @@ function getActions(){
       add(A,'Förlängd bolus vb','Bolus → EXTENDED','SYS');
     }
     if(pat==='fastLow'){
-      add(A,'Minska relevant basal ≈10–20 %',P.basal,'KONS');
-      add(A,'Om korrektionsdriven: försvaga ISF ≈10–20 %',P.cf,'KONS');
+      add(A,'Försvaga ISF ≈10–20 %',P.cf,'KONS');
+      add(A,'Vid för kraftig basalmodulering: minska relevant basal ≈10–20 %',P.basal,'KONS');
     }
     if(pat==='exerciseLow') add(A,'Starta "Träning" 1–2 h före aktivitet som brukar sänka glukos',P.exercise,'KONS');
     if(pat==='mealLow') add(A,'Försvaga KH-kvot ≈10–20 %',P.icr,'KONS');
